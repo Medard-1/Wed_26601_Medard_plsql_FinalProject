@@ -590,6 +590,182 @@ To implement this phase in Oracle:
 ---
 
 
+# 📦 Phase VI: Database Interaction and Transactions
+
+This phase focuses on database interaction 🗃️, ensuring that operations such as fetching data, performing transformations, and handling errors are done effectively. It also promotes modular programming by using procedures, functions, and packages 📚 to organize and manage database operations efficiently.
+
+---
+
+## ✅ Tasks and Deliverables
+
+### 1. Database Operations 🔄
+
+Perform DML (Data Manipulation Language) and DDL (Data Definition Language) operations to interact with the database.
+
+- **DML Operations** (Insert, Update, Delete)
+```sql
+-- Add a new column to track order priority
+ALTER TABLE Orders ADD Priority VARCHAR2(10) CHECK (Priority IN ('Low', 'Medium', 'High'));
+
+-- Update orders with priority levels
+UPDATE Orders SET Priority = 
+  CASE 
+    WHEN OrderID BETWEEN 1 AND 3 THEN 'High'
+    WHEN OrderID BETWEEN 4 AND 7 THEN 'Medium'
+    ELSE 'Low'
+  END;
+
+-- Delete test orders
+DELETE FROM Orders WHERE OrderStatus = 'Test';
+```
+
+- **DDL Operations** (Create, Alter, Drop) are demonstrated by the ALTER command above.
+
+---
+
+### 2. Simple Problem Statement 📈
+
+We analyze customer purchasing patterns using window functions. This helps us understand customer value and rank them accordingly.
+
+```sql
+SELECT 
+  c.CustomerID,
+  c.FirstName || ' ' || c.LastName AS CustomerName,
+  o.OrderID,
+  o.OrderDate,
+  COUNT(o.OrderID) OVER (PARTITION BY c.CustomerID) AS TotalOrders,
+  SUM(p.Price * od.Quantity) OVER (PARTITION BY c.CustomerID) AS TotalSpent,
+  RANK() OVER (ORDER BY SUM(p.Price * od.Quantity) OVER (PARTITION BY c.CustomerID) DESC) AS CustomerRank
+FROM 
+  Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+JOIN Products p ON od.ProductID = p.ProductID
+GROUP BY c.CustomerID, c.FirstName, c.LastName, o.OrderID, o.OrderDate;
+```
+
+---
+
+### 3. Parameterized Procedures with Cursors 🔍
+
+Fetch values from the database using a procedure and cursors for better control over data.
+
+```sql
+CREATE OR REPLACE PROCEDURE GetCustomerOrders(p_CustomerID IN Customers.CustomerID%TYPE) AS
+  CURSOR order_cursor IS
+    SELECT o.OrderID, o.OrderDate, o.OrderStatus, COUNT(d.DeliveryID) AS DeliveryCount
+    FROM Orders o
+    LEFT JOIN Deliveries d ON o.OrderID = d.OrderID
+    WHERE o.CustomerID = p_CustomerID
+    GROUP BY o.OrderID, o.OrderDate, o.OrderStatus;
+  v_order_rec order_cursor%ROWTYPE;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Orders for Customer ID: ' || p_CustomerID);
+  OPEN order_cursor;
+  LOOP
+    FETCH order_cursor INTO v_order_rec;
+    EXIT WHEN order_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Order ID: ' || v_order_rec.OrderID);
+    DBMS_OUTPUT.PUT_LINE('Date: ' || TO_CHAR(v_order_rec.OrderDate, 'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Status: ' || v_order_rec.OrderStatus);
+    DBMS_OUTPUT.PUT_LINE('Delivery Attempts: ' || v_order_rec.DeliveryCount);
+  END LOOP;
+  CLOSE order_cursor;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('No orders found for this customer.');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+```
+
+---
+
+### 4. Function to Calculate Delivery Fee 🚚
+
+```sql
+CREATE OR REPLACE FUNCTION CalculateDeliveryFee(p_DistanceKM IN NUMBER, p_OrderValue IN NUMBER) RETURN NUMBER IS
+  v_BaseFee NUMBER := 1500;
+  v_DistanceFee NUMBER;
+  v_TotalFee NUMBER;
+BEGIN
+  IF p_DistanceKM <= 5 THEN
+    v_DistanceFee := 0;
+  ELSE
+    v_DistanceFee := (p_DistanceKM - 5) * 500;
+  END IF;
+
+  IF p_OrderValue > 50000 THEN
+    v_TotalFee := 0;
+  ELSE
+    v_TotalFee := v_BaseFee + v_DistanceFee;
+  END IF;
+
+  RETURN v_TotalFee;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NULL;
+END;
+```
+
+---
+
+### 5. Package Implementation 📦
+
+Encapsulating procedures and functions for modular use.
+
+```sql
+CREATE OR REPLACE PACKAGE OrderManagement AS
+  PROCEDURE PlaceNewOrder(p_CustomerID IN Orders.CustomerID%TYPE, p_ShippingAddress IN Orders.ShippingAddress%TYPE, p_Priority IN Orders.Priority%TYPE DEFAULT 'Medium');
+  FUNCTION CheckProductStock(p_ProductID IN Products.ProductID%TYPE, p_Quantity IN NUMBER) RETURN BOOLEAN;
+  PROCEDURE UpdateOrderStatus(p_OrderID IN Orders.OrderID%TYPE, p_NewStatus IN Orders.OrderStatus%TYPE);
+END;
+```
+
+```sql
+CREATE OR REPLACE PACKAGE BODY OrderManagement AS
+  PROCEDURE PlaceNewOrder(...) IS BEGIN ... END;
+  FUNCTION CheckProductStock(...) RETURN BOOLEAN IS BEGIN ... END;
+  PROCEDURE UpdateOrderStatus(...) IS BEGIN ... END;
+END;
+```
+
+---
+
+### 6. Exception Handling 🛡️
+
+Handling edge cases and unexpected errors.
+
+```sql
+CREATE OR REPLACE PROCEDURE ProcessDelivery(p_DeliveryID IN Deliveries.DeliveryID%TYPE, p_NewStatus IN Deliveries.DeliveryStatus%TYPE) AS
+  ...
+BEGIN
+  ...
+EXCEPTION
+  WHEN v_InvalidTransition THEN
+    ROLLBACK;
+    DBMS_OUTPUT.PUT_LINE('Invalid status transition.');
+  WHEN OTHERS THEN
+    ROLLBACK;
+    DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+```
+
+---
+
+## 🧪 Testing Plan
+
+1. **Test Window Functions** for ranking and totals.
+2. **Procedure Tests**: Fetch customer orders using valid and invalid inputs.
+3. **Function Tests**: Check delivery fee calculations with various scenarios.
+4. **Package Tests**: Validate order placement and stock management.
+5. **Exception Handling Tests**: Trigger error scenarios to ensure robustness.
+
+---
+
+
+
+
 
 
 
