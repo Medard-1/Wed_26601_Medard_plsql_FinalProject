@@ -8,7 +8,7 @@
 
 ## 🎯 Phase Overview:
 
-## System Foundations 
+## System Foundations
 
 This phase establishes the core framework for our PL/SQL-powered logistics solution, covering:  
 
@@ -131,9 +131,7 @@ When a customer places an order:
 ---
 
 
-# 🧠 Phase III: Logical Model Design – E-Commerce Logistics Optimization
-
-## Phase III project: **"E-Commerce Logistics Optimization: A Smart Inventory & Delivery System"**! 🎯
+# 🧠 Phase III: Logical Model Design – E-Commerce Logistics Optimization🎯
 
 In this phase, I'll build a **logical data model** to support efficient operations.
 
@@ -198,7 +196,6 @@ Here are the core entities in my system, with attributes and relationships:
 | Customers → Orders        | 1:M   | One customer places many orders             |
 | Products → Inventory      | 1:M   | One product in multiple warehouse locations |
 | Orders → OrderDetails     | 1:M   | One order can include many products         |
-| Products → OrderDetails   | 1:M   | A product can appear in multiple orders     |
 | Orders → Deliveries       | 1:1   | Each order has one delivery assigned        |
 | Drivers → Deliveries      | 1:M   | A driver can make many deliveries           |
 
@@ -240,17 +237,6 @@ The model supports:
 # 🗃 Phase IV: Database Creation and Naming (Pluggable Database Implementation)
 
 ## 🔖 Covers: Physical DB creation, user access, naming conventions, Oracle OEM setup.
-
-### 🎯 Objective
-
-This phase focuses on building the physical environment for the system designed in Phases I–III. Using Oracle PL/SQL, we establish a named pluggable database, manage user roles, and prepare for monitoring and reporting via Oracle Enterprise Manager (OEM). This foundation allows the logical model to be executed in a real database environment.
-
-### 🔨Database Creation
-
-The Pluggable Database (PDB) was created using the following naming format:
-
-Database Name: 🗃 Phase IV: Database Creation and Naming (Pluggable Database Implementation)
-🔖 Covers: Physical DB creation, user access, naming conventions, Oracle OEM setup, GitHub documentation
 
 🎯 Objective
 This phase focuses on building the physical environment for the system designed in Phases I–III. Using Oracle PL/SQL, we establish a named pluggable database, manage user roles, and prepare for monitoring and reporting via Oracle Enterprise Manager (OEM). This foundation allows the logical model to be executed in a real database environment.
@@ -337,9 +323,9 @@ Grant succeeded.
 ---
 
 
-# 📦 Phase 5: Table Implementation & Data Insertion
+# 📦 Phase V: Table Implementation & Data Insertion
 
-Welcome to **Phase 5** of the E-Commerce Logistics Optimization System project! 🎯 In this step, we transform our logical model into a real, functional Oracle database structure 💾 — with fully defined tables and sample data to simulate real-world use. 🚚📊
+Welcome to **Phase 5** of the E-Commerce Logistics Optimization System project! 🎯 This phase is alll about transforming our logical model into a real, functional Oracle database structure 💾 — with fully defined tables and sample data to simulate real-world use. 🚚📊
 
 ---
 
@@ -765,7 +751,7 @@ END;
 
 # 📘 Advanced Database Programming & Auditing – Phase VII
 
-Welcome to **Phase VII** of our capstone project! In this stage, we enhance our e-commerce database system by implementing **advanced PL/SQL programming** and **auditing mechanisms**. These features ensure business logic enforcement, security, and user accountability 🚀.
+In this phase, we enhance our e-commerce database system by implementing **advanced PL/SQL programming** and **auditing mechanisms**. These features ensure business logic enforcement, security, and user accountability 🚀.
 
 ---
 
