@@ -451,7 +451,7 @@ INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES
 ('Eric', 'Rutaganda', '+250788901234', 'KN 12 Rd, Kigali');
 INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
 ('Valentine', 'Nyirahabimana', '+250788012345', 'KG 45 St, Ruhengeri');
-
+```
 -- Insert Products
 ```sql
 INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
