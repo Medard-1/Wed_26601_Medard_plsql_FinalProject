@@ -135,13 +135,13 @@ When a customer places an order:
 
 ## Phase III project: **"E-Commerce Logistics Optimization: A Smart Inventory & Delivery System"**! 🎯
 
-In this phase, we build a **logical data model** to support efficient operations, aligned with our business process model from Phase II.
+In this phase, I'll build a **logical data model** to support efficient operations.
 
 ---
 
 ## 🧱 1. Entity-Relationship (ER) Model
 
-Here are the core entities in our system, with attributes and relationships:
+Here are the core entities in my system, with attributes and relationships:
 
 ### 👤 Customers
 - `CustomerID` (PK)
