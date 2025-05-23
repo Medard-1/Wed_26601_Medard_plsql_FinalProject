@@ -237,8 +237,104 @@ The model supports:
 
 ---
 
+# 🗃 Phase IV: Database Creation and Naming (Pluggable Database Implementation)
 
+## 🔖 Covers: Physical DB creation, user access, naming conventions, Oracle OEM setup.
 
+### 🎯 Objective
+
+This phase focuses on building the physical environment for the system designed in Phases I–III. Using Oracle PL/SQL, we establish a named pluggable database, manage user roles, and prepare for monitoring and reporting via Oracle Enterprise Manager (OEM). This foundation allows the logical model to be executed in a real database environment.
+
+### 🔨Database Creation
+
+The Pluggable Database (PDB) was created using the following naming format:
+
+Database Name: 🗃 Phase IV: Database Creation and Naming (Pluggable Database Implementation)
+🔖 Covers: Physical DB creation, user access, naming conventions, Oracle OEM setup, GitHub documentation
+
+🎯 Objective
+This phase focuses on building the physical environment for the system designed in Phases I–III. Using Oracle PL/SQL, we establish a named pluggable database, manage user roles, and prepare for monitoring and reporting via Oracle Enterprise Manager (OEM). This foundation allows the logical model to be executed in a real database environment.
+
+## 🔨Database Creation
+
+The Pluggable Database (PDB) was created using the following naming format:
+
+```sql
+Database Name: wed_26601_medard_optimization_db
+Username: medard
+Password: medard
+```
+## 1.Create a pluggable database:
+
+```sql
+SQL> CREATE PLUGGABLE DATABASE wed_26601_medard_logistics_optimization_db
+  2  ADMIN USER medard IDENTIFIED BY medard
+  3    FILE_NAME_CONVERT = (
+  4      'C:\ORACLE21C\ORADATA\ORCL\PDBSEED\',
+  5      'C:\ORACLE21C\ORADATA\ORCL\WED_26601_MEDARD_LOGISTICS_OPTIMIZATION_DB\'
+  6    );
+
+Pluggable database created.
+```
+## 2.Open the newly created PDB:
+```sql
+SQL> ALTER PLUGGABLE DATABASE wed_26601_medard_logistics_optimization_db OPEN;
+
+Pluggable database altered.
+```
+Use Makes the PDB ready for operations.
+## 3.save the newly created PDB.
+```sql
+SQL> ALTER PLUGGABLE DATABASE wed_26601_medard_logistics_optimization_db SAVE STATE;
+
+Pluggable database altered.
+```
+
+- Use It makes sure that the PDB remains open after the database restarts.
+
+## 4. Set the Session Container
+```sql
+SQL> ALTER SESSION SET CONTAINER = wed_26687_gloria_online_retail_db;
+
+Session altered.
+```
+- Use: It changes the session to the newly created PDB for subsequent operations.
+
+## 5.User Creation and Privilege Assignment
+## Create a Database User
+```sql
+SQL> create user gloria identified by gloria;
+
+User created.
+```
+- Use: It creates a new user, medard, with the password medard.
+
+## Grant Basic Privileges
+
+```sql
+SQL> GRANT CONNECT, RESOURCE, DBA, SYSDBA TO gloria;
+
+Grant succeeded.
+```
+- Use: To assigns full privileges for database operations.
+
+- Use: To assigns full privileges for database operations.
+
+### 📸 Screenshot of PDB Creation
+ 
+![pdb_creation](https://github.com/user-attachments/assets/0312f6d8-4a6a-4b4c-b54c-ea07a2c0e8ba)
+
+## ⚖ Oracle Enterprise Manager (OEM)
+## The OEM interface confirmed:
+
+- Successful creation of the database.
+- Proper implementation of relationships between tables.
+
+## 📸 OEM confirm successful database creation and table relationships.
+
+![OEM](https://github.com/user-attachments/assets/2a6b9eb3-f4d9-40d2-80ad-ca211545bd80)
+
+---
 
 
 
