@@ -41,12 +41,13 @@ DRIVERS (🧑✈️ DriverID, Name, Contact)
 ```
 ## 🎯 Project Goals
 
-Objective	Emoji	Tech Implementation
-Auto-inventory	🤖	PL/SQL Triggers
-Route optimization	🗺️	Oracle Spatial
-Real-time tracking	🕒	Status Update Procedures
-Customer satisfaction	😊	Delivery Notifications
-Analytics reporting	📈	PL/SQL Cursors
+- Automate inventory management and order processing.
+- Optimize delivery routes and reduce delivery times.
+- Provide real-time order tracking and delivery status updates.
+- Improve customer satisfaction through efficient and reliable delivery.
+- Generate detailed reports for inventory and delivery analysis.
+
+
 
 ## 🌟 Anticipated Benefits
 
