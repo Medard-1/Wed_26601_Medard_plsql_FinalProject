@@ -1022,10 +1022,10 @@ EXEC AuditReporting.GetHolidaySchedule(2025);
 ```
 
 ---
-##"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.”##
-                             — Colossians 3:23 (NIV)
+### "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.” ###
+                                 Colossians 3:23 (NIV)
                             
-                             ###THANK YOU###
+                             ### THANK YOU ###
 
 
 
