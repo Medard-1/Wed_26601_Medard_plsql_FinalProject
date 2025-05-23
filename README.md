@@ -763,6 +763,280 @@ END;
 
 ---
 
+# 📘 Advanced Database Programming & Auditing – Phase VII
+
+Welcome to **Phase VII** of our capstone project! In this stage, we enhance our e-commerce database system by implementing **advanced PL/SQL programming** and **auditing mechanisms**. These features ensure business logic enforcement, security, and user accountability 🚀.
+
+---
+
+## 📌 Problem Statement
+
+Our e-commerce platform requires strict control over **order processing times** and **compliance logging** for security purposes:
+
+* ❌ Block modifications to orders on **weekdays (Monday–Friday)**.
+* 🗓️ Prevent order manipulations during **official public holidays**.
+* 🕵️ Track all sensitive database operations for **auditing and accountability**.
+
+We use:
+
+* **Triggers** for restriction enforcement.
+* **Packages** for reusable auditing utilities.
+* **Audit tables** to record access attempts and actions.
+
+---
+
+## 🗓️ 1. Holiday Reference Table
+
+```sql
+CREATE TABLE PublicHolidays (
+    HolidayID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    HolidayName VARCHAR2(100) NOT NULL,
+    HolidayDate DATE NOT NULL,
+    Description VARCHAR2(255),
+    UNIQUE (HolidayDate)
+);
+
+-- Insert public holidays for the upcoming month (Rwanda example)
+INSERT INTO PublicHolidays (HolidayName, HolidayDate, Description) VALUES 
+('Liberation Day', TO_DATE('04-JUL-2025', 'DD-MON-YYYY'), 'Celebration of the end of the 1994 genocide');
+
+INSERT INTO PublicHolidays (HolidayName, HolidayDate, Description) VALUES 
+('Assumption Day', TO_DATE('15-AUG-2025', 'DD-MON-YYYY'), 'Feast of the Assumption of Mary');
+
+INSERT INTO PublicHolidays (HolidayName, HolidayDate, Description) VALUES 
+('Heroes Day', TO_DATE('01-FEB-2025', 'DD-MON-YYYY'), 'Day honoring national heroes');
+```
+
+---
+
+## 📝 2. Audit Logging Table
+
+```sql
+CREATE TABLE OrderAuditLog (
+    AuditID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    UserID VARCHAR2(100) NOT NULL,
+    ActionDate TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
+    TableName VARCHAR2(50) NOT NULL,
+    ActionType VARCHAR2(10) NOT NULL, -- INSERT, UPDATE, DELETE
+    RecordID NUMBER NOT NULL,
+    OldValue CLOB,
+    NewValue CLOB,
+    Status VARCHAR2(20) NOT NULL, -- SUCCESS, FAILED, RESTRICTED
+    Comments VARCHAR2(255)
+);
+```
+
+---
+
+## 🔄 3. Compound Trigger: `OrderProcessingRestrictions`
+
+```sql
+CREATE OR REPLACE TRIGGER OrderProcessingRestrictions
+FOR INSERT OR UPDATE OR DELETE ON Orders
+COMPOUND TRIGGER
+    v_is_weekday BOOLEAN := FALSE;
+    v_is_holiday BOOLEAN := FALSE;
+    v_restriction_message VARCHAR2(255);
+    v_action VARCHAR2(10);
+    v_user VARCHAR2(100);
+
+    BEFORE STATEMENT IS
+    BEGIN
+        IF TO_NUMBER(TO_CHAR(SYSDATE, 'D')) BETWEEN 2 AND 6 THEN
+            v_is_weekday := TRUE;
+        END IF;
+
+        BEGIN
+            SELECT 1 INTO v_is_holiday
+            FROM PublicHolidays
+            WHERE HolidayDate = TRUNC(SYSDATE)
+            AND ROWNUM = 1;
+            v_is_holiday := TRUE;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                v_is_holiday := FALSE;
+        END;
+
+        IF INSERTING THEN v_action := 'INSERT';
+        ELSIF UPDATING THEN v_action := 'UPDATE';
+        ELSIF DELETING THEN v_action := 'DELETE';
+        END IF;
+
+        v_user := USER;
+    END BEFORE STATEMENT;
+
+    BEFORE EACH ROW IS
+    BEGIN
+        IF v_is_weekday OR v_is_holiday THEN
+            IF v_is_weekday THEN
+                v_restriction_message := 'Order modifications not allowed on weekdays (Monday-Friday)';
+            ELSE
+                v_restriction_message := 'Order modifications not allowed on public holidays';
+            END IF;
+
+            INSERT INTO OrderAuditLog (
+                UserID, TableName, ActionType, 
+                RecordID, Status, Comments
+            ) VALUES (
+                v_user, 'ORDERS', v_action,
+                :NEW.OrderID, 'RESTRICTED', v_restriction_message
+            );
+
+            RAISE_APPLICATION_ERROR(-20001, v_restriction_message);
+        END IF;
+    END BEFORE EACH ROW;
+
+    AFTER EACH ROW IS
+        v_old_value CLOB;
+        v_new_value CLOB;
+    BEGIN
+        IF v_is_weekday OR v_is_holiday THEN
+            RETURN;
+        END IF;
+
+        IF UPDATING THEN
+            v_old_value := 'OrderID=' || :OLD.OrderID || ',' || 'CustomerID=' || :OLD.CustomerID || ',' || 'OrderDate=' || TO_CHAR(:OLD.OrderDate, 'DD-MON-YYYY') || ',' || 'OrderStatus=' || :OLD.OrderStatus || ',' || 'ShippingAddress=' || :OLD.ShippingAddress || ',' || 'Priority=' || :OLD.Priority;
+            v_new_value := 'OrderID=' || :NEW.OrderID || ',' || 'CustomerID=' || :NEW.CustomerID || ',' || 'OrderDate=' || TO_CHAR(:NEW.OrderDate, 'DD-MON-YYYY') || ',' || 'OrderStatus=' || :NEW.OrderStatus || ',' || 'ShippingAddress=' || :NEW.ShippingAddress || ',' || 'Priority=' || :NEW.Priority;
+        ELSIF INSERTING THEN
+            v_new_value := 'OrderID=' || :NEW.OrderID || ',' || 'CustomerID=' || :NEW.CustomerID || ',' || 'OrderDate=' || TO_CHAR(:NEW.OrderDate, 'DD-MON-YYYY') || ',' || 'OrderStatus=' || :NEW.OrderStatus || ',' || 'ShippingAddress=' || :NEW.ShippingAddress || ',' || 'Priority=' || :NEW.Priority;
+        ELSIF DELETING THEN
+            v_old_value := 'OrderID=' || :OLD.OrderID || ',' || 'CustomerID=' || :OLD.CustomerID || ',' || 'OrderDate=' || TO_CHAR(:OLD.OrderDate, 'DD-MON-YYYY') || ',' || 'OrderStatus=' || :OLD.OrderStatus || ',' || 'ShippingAddress=' || :OLD.ShippingAddress || ',' || 'Priority=' || :OLD.Priority;
+        END IF;
+
+        INSERT INTO OrderAuditLog (
+            UserID, TableName, ActionType, 
+            RecordID, OldValue, NewValue, Status
+        ) VALUES (
+            v_user, 'ORDERS', v_action,
+            COALESCE(:NEW.OrderID, :OLD.OrderID), v_old_value, v_new_value, 'SUCCESS'
+        );
+    END AFTER EACH ROW;
+END OrderProcessingRestrictions;
+/
+```
+
+---
+
+## 🚚 4. Trigger: Delivery Status Audit
+
+```sql
+CREATE OR REPLACE TRIGGER AuditDeliveryChanges
+BEFORE UPDATE OF DeliveryStatus ON Deliveries
+FOR EACH ROW
+DECLARE
+    v_user VARCHAR2(100) := USER;
+BEGIN
+    INSERT INTO OrderAuditLog (
+        UserID, TableName, ActionType, 
+        RecordID, OldValue, NewValue, Status
+    ) VALUES (
+        v_user, 'DELIVERIES', 'UPDATE',
+        :OLD.DeliveryID, 
+        'Status=' || :OLD.DeliveryStatus, 
+        'Status=' || :NEW.DeliveryStatus, 
+        'SUCCESS'
+    );
+END;
+/
+```
+
+---
+
+## 📦 5. Package: `AuditReporting`
+
+### Specification:
+
+```sql
+CREATE OR REPLACE PACKAGE AuditReporting AS
+    PROCEDURE GetRestrictedAttempts(p_start_date IN DATE DEFAULT NULL, p_end_date IN DATE DEFAULT NULL);
+    PROCEDURE GetOrderAuditTrail(p_order_id IN Orders.OrderID%TYPE);
+    PROCEDURE GetHolidaySchedule(p_year IN NUMBER DEFAULT EXTRACT(YEAR FROM SYSDATE));
+END AuditReporting;
+/
+```
+
+### Body:
+
+```sql
+CREATE OR REPLACE PACKAGE BODY AuditReporting AS
+    PROCEDURE GetRestrictedAttempts(p_start_date IN DATE DEFAULT NULL, p_end_date IN DATE DEFAULT NULL) IS
+        CURSOR audit_cur IS
+            SELECT * FROM OrderAuditLog
+            WHERE Status = 'RESTRICTED'
+              AND (p_start_date IS NULL OR ActionDate >= p_start_date)
+              AND (p_end_date IS NULL OR ActionDate <= p_end_date + 1)
+            ORDER BY ActionDate DESC;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('RESTRICTED ORDER ATTEMPTS');
+        FOR rec IN audit_cur LOOP
+            DBMS_OUTPUT.PUT_LINE(TO_CHAR(rec.ActionDate, 'DD-MON-YYYY HH24:MI') || ' | ' || rec.UserID || ' | ' || rec.ActionType || ' | ' || rec.Comments);
+        END LOOP;
+    END;
+
+    PROCEDURE GetOrderAuditTrail(p_order_id IN Orders.OrderID%TYPE) IS
+        CURSOR audit_cur IS
+            SELECT * FROM OrderAuditLog
+            WHERE TableName = 'ORDERS'
+              AND RecordID = p_order_id
+            ORDER BY ActionDate DESC;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('AUDIT TRAIL FOR ORDER #' || p_order_id);
+        FOR rec IN audit_cur LOOP
+            DBMS_OUTPUT.PUT_LINE(TO_CHAR(rec.ActionDate, 'DD-MON-YYYY HH24:MI') || ' | ' || rec.UserID || ' | ' || rec.ActionType || ' | ' || rec.Status);
+        END LOOP;
+    END;
+
+    PROCEDURE GetHolidaySchedule(p_year IN NUMBER DEFAULT EXTRACT(YEAR FROM SYSDATE)) IS
+        CURSOR holiday_cur IS
+            SELECT * FROM PublicHolidays
+            WHERE EXTRACT(YEAR FROM HolidayDate) = p_year
+            ORDER BY HolidayDate;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('PUBLIC HOLIDAYS FOR ' || p_year);
+        FOR rec IN holiday_cur LOOP
+            DBMS_OUTPUT.PUT_LINE(TO_CHAR(rec.HolidayDate, 'DD-MON-YYYY') || ' | ' || rec.HolidayName || ' | ' || rec.Description);
+        END LOOP;
+    END;
+END AuditReporting;
+/
+```
+
+---
+
+## 🧪 6. Testing
+
+### Check Today’s Day:
+
+```sql
+SELECT TO_CHAR(SYSDATE, 'DY') AS Today, 
+       TO_NUMBER(TO_CHAR(SYSDATE, 'D')) AS DayNumber 
+FROM dual;
+```
+
+### Attempt Restricted Operation:
+
+```sql
+BEGIN
+    UPDATE Orders SET Priority = 'High' WHERE OrderID = 1;
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END;
+/
+```
+
+### Audit Reports:
+
+```sql
+EXEC AuditReporting.GetRestrictedAttempts;
+EXEC AuditReporting.GetOrderAuditTrail(1);
+EXEC AuditReporting.GetHolidaySchedule(2025);
+```
+
+---
+
 
 
 
