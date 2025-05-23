@@ -59,6 +59,76 @@ DRIVERS (🧑✈️ DriverID, Name, Contact)
 
 - 📱 Real-time customer notifications
 
+---
+
+
+# 📘 Phase II: Business Process Modeling (MIS)
+
+This project models how orders are processed and delivered in a smart e-commerce system using MIS (Management Information System).
+
+---
+
+## 🎯 Objective
+To make order processing and delivery faster and smarter using technology (MIS).
+
+---
+
+## 🔍 What Is Happening Here?
+
+When a customer places an order:
+1. ✅ MIS checks if the item is in stock.
+2. 📦 Warehouse staff packs the item.
+3. 🚚 Delivery driver gets the best route.
+4. 🧾 Customer service can see all updates.
+5. 📈 Managers get reports to improve service.
+
+---
+
+## 🧠 Who Does What?
+
+- 👨‍🏭 **Warehouse Staff**: Picks and packs items.
+- 🖥️ **MIS (Inventory System)**: Checks stock and sends alerts.
+- 🚛 **Delivery Driver**: Delivers packages and updates status.
+- ☎️ **Customer Service**: Answers customer questions.
+
+---
+
+## 🔄 The Flow
+
+1. 🟢 Start: Customer places an order.
+2. 🧮 MIS checks stock.
+3. ❓ If stock is available:
+   - 🏷️ Item reserved and packed.
+   - 🚗 Route optimized for driver.
+4. 🗣️ Driver gets delivery job.
+5. ✅ Driver delivers the item.
+6. 📲 Status is updated in the system.
+7. 📞 Customer service gets updates.
+8. 🔴 End: Order is delivered.
+
+---
+## 📸 Screenshot of BPMN Diagram
+
+
+## 📦 Tools Used
+
+- 🛠️ draw.io for diagrams
+- 📜 PL/SQL for automation and smart routing
+- 🧭 Oracle Spatial for map optimization
+
+---
+
+## 💡 Benefits
+
+- 🚀 Faster deliveries
+- 👁️ Real-time updates
+- 🤝 Happy customers
+- 💰 Save money on stock
+- 📊 Smart reports for better decisions
+
+---
+
+
 
 
 
