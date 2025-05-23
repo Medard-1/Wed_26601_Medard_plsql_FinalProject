@@ -109,6 +109,8 @@ When a customer places an order:
 ---
 ## 📸 Screenshot of BPMN Diagram
 
+![image](https://github.com/user-attachments/assets/d6f92927-38d7-428e-9ac7-4b3311425c45)
+
 
 ## 📦 Tools Used
 
