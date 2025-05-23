@@ -337,6 +337,257 @@ Grant succeeded.
 ---
 
 
+# 📦 Phase 5: Table Implementation & Data Insertion
+
+Welcome to **Phase 5** of the E-Commerce Logistics Optimization System project! 🎯 In this step, we transform our logical model into a real, functional Oracle database structure 💾 — with fully defined tables and sample data to simulate real-world use. 🚚📊
+
+---
+
+## 🧱 1. Table Creation
+
+We have created the following tables to support the system's operations:
+
+- 👤 `Customers` – Stores buyer details like name, contact info, and address.
+- 📦 `Products` – Stores product listings, availability, and pricing.
+- 🏪 `Inventory` – Tracks stock levels at various warehouse locations.
+- 📑 `Orders` – Captures customer orders with their status and shipping address.
+- 🧍‍♂️ `Drivers` – Information about delivery drivers.
+- 🚚 `Deliveries` – Tracks the delivery status, route, and assigned driver for each order.
+
+✅ All tables are built with:
+- **Primary Keys (PK)** for unique identification 🔑
+- **Foreign Keys (FK)** for relationships 🔗
+- Constraints like `NOT NULL`, `UNIQUE`, `CHECK`, and `DEFAULT` for data validity ✔️
+
+### 🔧 SQL Table Creation Queries:
+
+```sql
+CREATE TABLE Customers (
+    CustomerID      NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    FirstName       VARCHAR2(50) NOT NULL,
+    LastName        VARCHAR2(50) NOT NULL,
+    ContactInfo     VARCHAR2(100),
+    Address         VARCHAR2(255) NOT NULL
+);
+
+CREATE TABLE Products (
+    ProductID       NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ProductName     VARCHAR2(100) NOT NULL UNIQUE,
+    Description     VARCHAR2(255),
+    StockQuantity   NUMBER DEFAULT 0 CHECK (StockQuantity >= 0),
+    Price           NUMBER(10,2) NOT NULL CHECK (Price >= 0)
+);
+
+CREATE TABLE Inventory (
+    InventoryID         NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ProductID           NUMBER NOT NULL,
+    WarehouseLocation   VARCHAR2(100) NOT NULL,
+    StockLevel          NUMBER DEFAULT 0 CHECK (StockLevel >= 0),
+    CONSTRAINT fk_inventory_product FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+CREATE TABLE Orders (
+    OrderID         NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    CustomerID      NUMBER NOT NULL,
+    OrderDate       DATE DEFAULT SYSDATE,
+    OrderStatus     VARCHAR2(50) CHECK (OrderStatus IN ('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled')),
+    ShippingAddress VARCHAR2(255) NOT NULL,
+    CONSTRAINT fk_orders_customer FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+CREATE TABLE Drivers (
+    DriverID        NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    FirstName       VARCHAR2(50) NOT NULL,
+    LastName        VARCHAR2(50) NOT NULL,
+    ContactInfo     VARCHAR2(100)
+);
+
+CREATE TABLE Deliveries (
+    DeliveryID      NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    OrderID         NUMBER NOT NULL,
+    DriverID        NUMBER NOT NULL,
+    DeliveryDate    DATE,
+    DeliveryStatus  VARCHAR2(50) CHECK (DeliveryStatus IN ('Assigned', 'In Transit', 'Delivered', 'Failed')),
+    Route           VARCHAR2(255),
+    CONSTRAINT fk_deliveries_order FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    CONSTRAINT fk_deliveries_driver FOREIGN KEY (DriverID) REFERENCES Drivers(DriverID)
+);
+```
+
+---
+
+## 📝 2. Data Insertion
+
+Realistic data has been added to simulate real-world scenarios:
+
+- 👥 10 diverse customers from various Rwandan cities.
+- 🛒 10 essential products like milk, sugar, rice, and bread.
+- 🏢 Inventory across different warehouses (e.g., Kigali, Gisenyi, Butare).
+- 🧾 10 sample orders with varying statuses.
+- 🧑‍✈️ 10 drivers with unique contact information.
+- 📦 10 deliveries with assigned routes and delivery status updates.
+
+### 🗃️ SQL Data Insertion Queries:
+
+```sql
+-- Insert Customers
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Jean', 'Uwimana', '+250788123456', 'KN 45 St, Kigali');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Marie', 'Mukamana', '+250788234567', 'KG 12 Ave, Gisenyi');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Pierre', 'Niyonsenga', '+250788345678', 'KK 78 Rd, Kigali');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Claudine', 'Uwase', '+250788456789', 'KG 56 St, Butare');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Emmanuel', 'Habimana', '+250788567890', 'KN 23 Ave, Kigali');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Josiane', 'Iradukunda', '+250788678901', 'KG 34 Rd, Gitarama');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Theophile', 'Nkundimana', '+250788789012', 'KN 67 St, Kigali');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Ange', 'Mutesi', '+250788890123', 'KG 89 Ave, Kibuye');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Eric', 'Rutaganda', '+250788901234', 'KN 12 Rd, Kigali');
+INSERT INTO Customers (FirstName, LastName, ContactInfo, Address) VALUES 
+('Valentine', 'Nyirahabimana', '+250788012345', 'KG 45 St, Ruhengeri');
+
+-- Insert Products
+```sql
+INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Milk 1L', 'Fresh cow milk 1 liter', 100, 1200);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Sugar 1kg', 'Premium white sugar', 200, 1500);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Rice 5kg', 'Long grain rice', 150, 7500);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Cooking Oil 1L', 'Vegetable cooking oil', 80, 2500);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Beans 1kg', 'Red kidney beans', 120, 1800);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Maize Flour 2kg', 'Fine maize flour', 90, 1600);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Tea Leaves 250g', 'Rwandan black tea', 60, 1200);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Bread Loaf', 'Fresh white bread', 70, 800);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Eggs (Tray)', '30 eggs tray', 50, 3500);
+    INSERT INTO Products (ProductName, Description, StockQuantity, Price) VALUES 
+    ('Mineral Water 1L', 'Bottled drinking water', 200, 600);
+```
+-- Insert Inventory
+```sql
+INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (1, 'Gisenyi Warehouse', 50);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (2, 'Butare Warehouse', 75);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (3, 'Kigali Main Warehouse', 100);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (4, 'Ruhengeri Warehouse', 40);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (5, 'Kigali Main Warehouse', 60);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (6, 'Gitarama Warehouse', 45);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (7, 'Kigali Main Warehouse', 30);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (8, 'Kibuye Warehouse', 35);
+    INSERT INTO Inventory (ProductID, WarehouseLocation, StockLevel) VALUES 
+    (9, 'Kigali Main Warehouse', 25);
+```
+
+-- Insert Drivers
+```sql
+INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Samuel', 'Niyomugabo', '+250788112233');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('David', 'Hakizimana', '+250788223344');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Patrick', 'Mugisha', '+250788334455');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Alex', 'Nsengimana', '+250788445566');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Paul', 'Rwigema', '+250788556677');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Jean', 'Twahirwa', '+250788667788');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Eric', 'Mugabo', '+250788778899');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Emmanuel', 'Rutayisire', '+250788889900');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Joseph', 'Nkusi', '+250788990011');
+    INSERT INTO Drivers (FirstName, LastName, ContactInfo) VALUES 
+    ('Peter', 'Rukundo', '+250788001122');
+
+```
+
+-- Insert Orders
+```sql
+  INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (1, TO_DATE('2023-05-01', 'YYYY-MM-DD'), 'Delivered', 'KN 45 St, Kigali');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (2, TO_DATE('2023-05-02', 'YYYY-MM-DD'), 'Processing', 'KG 12 Ave, Gisenyi');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (3, TO_DATE('2023-05-03', 'YYYY-MM-DD'), 'Shipped', 'KK 78 Rd, Kigali');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (4, TO_DATE('2023-05-04', 'YYYY-MM-DD'), 'Pending', 'KG 56 St, Butare');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (5, TO_DATE('2023-05-05', 'YYYY-MM-DD'), 'Delivered', 'KN 23 Ave, Kigali');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (6, TO_DATE('2023-05-06', 'YYYY-MM-DD'), 'Processing', 'KG 34 Rd, Gitarama');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (7, TO_DATE('2023-05-07', 'YYYY-MM-DD'), 'Shipped', 'KN 67 St, Kigali');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (8, TO_DATE('2023-05-08', 'YYYY-MM-DD'), 'Pending', 'KG 89 Ave, Kibuye');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (9, TO_DATE('2023-05-09', 'YYYY-MM-DD'), 'Delivered', 'KN 12 Rd, Kigali');
+INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, ShippingAddress) VALUES (10, TO_DATE('2023-05-10', 'YYYY-MM-DD'), 'Processing', 'KG 45 St, Ruhengeri');
+
+```
+
+-- Insert Deliveries
+```sql
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (1, 1, TO_DATE('2023-05-03', 'YYYY-MM-DD'), 'Delivered', 'Route 1 - Kigali Main Warehouse to KN 45 St, Kigali');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (2, 2, NULL, 'Assigned', 'Route 2 - Gisenyi Warehouse to KG 12 Ave, Gisenyi');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (3, 3, NULL, 'In Transit', 'Route 3 - Kigali Main Warehouse to KK 78 Rd, Kigali');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (4, 4, NULL, 'Assigned', 'Route 4 - Butare Warehouse to KG 56 St, Butare');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (5, 5, TO_DATE('2023-05-07', 'YYYY-MM-DD'), 'Delivered', 'Route 5 - Kigali Main Warehouse to KN 23 Ave, Kigali');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (6, 6, NULL, 'Assigned', 'Route 6 - Gitarama Warehouse to KG 34 Rd, Gitarama');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (7, 7, NULL, 'In Transit', 'Route 7 - Kigali Main Warehouse to KN 67 St, Kigali');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (8, 8, NULL, 'Assigned', 'Route 8 - Kibuye Warehouse to KG 89 Ave, Kibuye');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (9, 9, TO_DATE('2023-05-11', 'YYYY-MM-DD'), 'Delivered', 'Route 9 - Kigali Main Warehouse to KN 12 Rd, Kigali');
+INSERT INTO Deliveries (OrderID, DriverID, DeliveryDate, DeliveryStatus, Route) VALUES (10, 10, NULL, 'Assigned', 'Route 10 - Ruhengeri Warehouse to KG 45 St, Ruhengeri');
+
+
+```
+
+---
+
+## 🔐 3. Data Integrity
+
+Data was inserted with **careful validation** to ensure:
+
+- Referential integrity via foreign key constraints.
+- Logical correctness (e.g., non-negative stock quantities, valid delivery statuses).
+- Compliance with the defined schema and constraints.
+
+This setup ensures accurate, consistent, and valid data across the system! 🎯
+
+---
+
+## 🏗️ 4. Physical Database Structure
+
+The logical model has been converted into an efficient physical structure using Oracle SQL syntax:
+
+- 📌 Auto-incrementing `IDENTITY` columns for IDs.
+- 🧩 Defined relationships across `CustomerID`, `ProductID`, `OrderID`, `DriverID`.
+- ⛓ Constraints to enforce data rules:
+  - ✅ `NOT NULL` – Required values
+  - 🚫 `CHECK` – Valid ranges/status
+  - 🔒 `UNIQUE` – No duplicates for key fields
+
+---
+
+## 📥 How to Use
+
+To implement this phase in Oracle:
+
+1. Run the insert data properly.
+2. Use Oracle SQL Developer to execute the script.
+
+---
 
 
 
