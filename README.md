@@ -1,7 +1,9 @@
 # 📦 PROJECT TITLE: E-Commerce Logistics Optimization : Smart Inventory & Delivery System
 
 ## NAME: MEDARD MUSINGUZI
-## ID: 26601 
+## ID: 26601
+## Instructor: ERIC MANIRAGUHA
+## Institution: Adventist University of Central Africa
 
 ## Phase 1 📊  
  
